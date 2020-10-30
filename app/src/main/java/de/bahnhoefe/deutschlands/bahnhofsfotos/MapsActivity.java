@@ -69,6 +69,7 @@ import java.util.Map;
 
 import de.bahnhoefe.deutschlands.bahnhofsfotos.Dialogs.MapInfoFragment;
 import de.bahnhoefe.deutschlands.bahnhofsfotos.Dialogs.SimpleDialogs;
+import de.bahnhoefe.deutschlands.bahnhofsfotos.Dialogs.StationFilterBar;
 import de.bahnhoefe.deutschlands.bahnhofsfotos.databinding.ActivityMapsBinding;
 import de.bahnhoefe.deutschlands.bahnhofsfotos.db.DbAdapter;
 import de.bahnhoefe.deutschlands.bahnhofsfotos.mapsforge.ClusterManager;
@@ -79,10 +80,11 @@ import de.bahnhoefe.deutschlands.bahnhofsfotos.mapsforge.MarkerBitmap;
 import de.bahnhoefe.deutschlands.bahnhofsfotos.mapsforge.TapHandler;
 import de.bahnhoefe.deutschlands.bahnhofsfotos.model.Station;
 import de.bahnhoefe.deutschlands.bahnhofsfotos.model.Upload;
+import de.bahnhoefe.deutschlands.bahnhofsfotos.util.StationFilter;
 
 import static android.view.Menu.NONE;
 
-public class MapsActivity extends AppCompatActivity implements LocationListener, TapHandler<MapsActivity.BahnhofGeoItem> {
+public class MapsActivity extends AppCompatActivity implements LocationListener, TapHandler<MapsActivity.BahnhofGeoItem>, StationFilterBar.OnChangeListener {
 
     public static final String EXTRAS_LATITUDE = "Extras_Latitude";
     public static final String EXTRAS_LONGITUDE = "Extras_Longitude";
@@ -565,6 +567,16 @@ public class MapsActivity extends AppCompatActivity implements LocationListener,
         baseApplication.setLocationUpdates(checked);
     }
 
+    @Override
+    public void stationFilterChanged(final StationFilter stationFilter) {
+        reloadMap();
+    }
+
+    @Override
+    public void sortOrderChanged(final boolean sortByDistance) {
+        // unused
+    }
+
     private static class LoadMapMarkerTask extends Thread {
         private final WeakReference<MapsActivity> activityRef;
 
@@ -717,6 +729,9 @@ public class MapsActivity extends AppCompatActivity implements LocationListener,
         if (baseApplication.isLocationUpdates()) {
             registerLocationManager();
         }
+        binding.map.stationFilterBar.setBaseApplication(baseApplication);
+        binding.map.stationFilterBar.setOnChangeListener(this);
+        binding.map.stationFilterBar.setSortOrderEnabled(false);
     }
 
     private void createClusterManager() {
